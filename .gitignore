@@ -16,8 +16,9 @@ env/
 backend/chroma_store/
 
 # Environment files
-.env
-.env.local
+**/.env
+**/.env.*
+!**/.env.example
 
 # IDE
 .vscode/
