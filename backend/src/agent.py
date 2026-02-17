@@ -9,18 +9,19 @@ import src.compat  # noqa: F401 — must be first to patch pydantic v1 for Pytho
 
 from typing import Literal, TypedDict
 
-from langchain_chroma import Chroma
+import chromadb
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
+from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_groq import ChatGroq
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel, Field
 
 from src.config import (
     CHROMA_PERSIST_DIR,
     COLLECTION_NAME,
-    EMBEDDING_MODEL,
+    GROQ_API_KEY,
     LLM_MODEL,
-    OPENAI_API_KEY,
     ROUTER_MODEL,
 )
 from src.prompts import RETRIEVER_SYSTEM_PROMPT, ROUTER_SYSTEM_PROMPT, VISUALIZER_SYSTEM_PROMPT
@@ -58,17 +59,22 @@ class RouteDecision(BaseModel):
 # Shared helpers
 # ---------------------------------------------------------------------------
 
-def _get_vectorstore() -> Chroma:
-    """Load the persisted ChromaDB vector store."""
-    embeddings = OpenAIEmbeddings(
-        model=EMBEDDING_MODEL,
-        openai_api_key=OPENAI_API_KEY,
-    )
-    return Chroma(
-        persist_directory=CHROMA_PERSIST_DIR,
-        embedding_function=embeddings,
-        collection_name=COLLECTION_NAME,
-    )
+def _query_docs(query: str, k: int = 5) -> list[Document]:
+    """Query ChromaDB directly using its native embedding function."""
+    try:
+        client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
+        collection = client.get_collection(
+            name=COLLECTION_NAME,
+            embedding_function=DefaultEmbeddingFunction(),
+        )
+    except Exception:
+        return []  # Collection not yet created — run ingest first
+
+    results = collection.query(query_texts=[query], n_results=k)
+    docs: list[Document] = []
+    for content, meta in zip(results["documents"][0], results["metadatas"][0]):
+        docs.append(Document(page_content=content, metadata=meta or {}))
+    return docs
 
 
 def _extract_sources(docs: list) -> list[dict]:
@@ -107,11 +113,11 @@ def _format_context(docs: list) -> str:
 # ---------------------------------------------------------------------------
 
 def router_node(state: AgentState) -> dict:
-    """Classify user intent using GPT-4o-mini with structured output."""
-    llm = ChatOpenAI(
+    """Classify user intent using Groq with structured output."""
+    llm = ChatGroq(
         model=ROUTER_MODEL,
         temperature=0,
-        openai_api_key=OPENAI_API_KEY,
+        groq_api_key=GROQ_API_KEY,
     )
     structured_llm = llm.with_structured_output(RouteDecision)
 
@@ -125,16 +131,15 @@ def router_node(state: AgentState) -> dict:
 
 def retriever_node(state: AgentState) -> dict:
     """Retrieve relevant chunks and generate an answer with source citations."""
-    vectorstore = _get_vectorstore()
-    docs = vectorstore.similarity_search(state["input"], k=5)
+    docs = _query_docs(state["input"], k=5)
 
     context_str = _format_context(docs)
     sources = _extract_sources(docs)
 
-    llm = ChatOpenAI(
+    llm = ChatGroq(
         model=LLM_MODEL,
         temperature=0.1,
-        openai_api_key=OPENAI_API_KEY,
+        groq_api_key=GROQ_API_KEY,
     )
 
     messages = [
@@ -159,16 +164,15 @@ def retriever_node(state: AgentState) -> dict:
 
 def visualizer_node(state: AgentState) -> dict:
     """Retrieve context and generate a Mermaid.js diagram."""
-    vectorstore = _get_vectorstore()
-    docs = vectorstore.similarity_search(state["input"], k=10)
+    docs = _query_docs(state["input"], k=10)
 
     context_str = _format_context(docs)
     sources = _extract_sources(docs)
 
-    llm = ChatOpenAI(
+    llm = ChatGroq(
         model=LLM_MODEL,
         temperature=0,
-        openai_api_key=OPENAI_API_KEY,
+        groq_api_key=GROQ_API_KEY,
     )
 
     messages = [

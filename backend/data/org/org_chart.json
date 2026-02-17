@@ -1,0 +1,105 @@
+{
+  "diagram_type": "org_chart",
+  "nodes": [
+    {
+      "id": "ceo-001",
+      "label": "CEO",
+      "description": "Chief Executive Officer — overall strategic leadership",
+      "node_type": "person",
+      "parent_id": null,
+      "permission_level": "public"
+    },
+    {
+      "id": "cto-001",
+      "label": "CTO",
+      "description": "Chief Technology Officer — Sarah Chen",
+      "node_type": "person",
+      "parent_id": "ceo-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "vp-eng-001",
+      "label": "VP Engineering",
+      "description": "Michael Roberts — oversees all engineering teams",
+      "node_type": "person",
+      "parent_id": "cto-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "dept-backend-001",
+      "label": "Backend Engineering",
+      "description": "Director: James Wilson. Teams: API, Data, Infrastructure",
+      "node_type": "department",
+      "parent_id": "vp-eng-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "dept-frontend-001",
+      "label": "Frontend Engineering",
+      "description": "Director: Emily Zhang. Teams: Web, Mobile",
+      "node_type": "department",
+      "parent_id": "vp-eng-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "dept-qa-001",
+      "label": "QA Engineering",
+      "description": "Director: David Kim. Teams: Automation, Manual QA",
+      "node_type": "department",
+      "parent_id": "vp-eng-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "team-api-001",
+      "label": "API Team",
+      "description": "Lead: Lisa Park. Builds and maintains REST & GraphQL APIs.",
+      "node_type": "team",
+      "parent_id": "dept-backend-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "team-data-001",
+      "label": "Data Platform Team",
+      "description": "Lead: Raj Patel. Manages data pipelines and analytics.",
+      "node_type": "team",
+      "parent_id": "dept-backend-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "team-infra-001",
+      "label": "Infrastructure Team",
+      "description": "Lead: Ana Martinez. Cloud infra, Kubernetes, CI/CD.",
+      "node_type": "team",
+      "parent_id": "dept-backend-001",
+      "permission_level": "admin"
+    },
+    {
+      "id": "team-web-001",
+      "label": "Web Team",
+      "description": "Lead: Chris Johnson. Builds all web frontend products.",
+      "node_type": "team",
+      "parent_id": "dept-frontend-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "team-mobile-001",
+      "label": "Mobile Team",
+      "description": "Lead: Priya Sharma. iOS and Android apps.",
+      "node_type": "team",
+      "parent_id": "dept-frontend-001",
+      "permission_level": "manager"
+    }
+  ],
+  "edges": [
+    {"id": "e-ceo-cto", "source_id": "ceo-001", "target_id": "cto-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-cto-vp", "source_id": "cto-001", "target_id": "vp-eng-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-vp-be", "source_id": "vp-eng-001", "target_id": "dept-backend-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-vp-fe", "source_id": "vp-eng-001", "target_id": "dept-frontend-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-vp-qa", "source_id": "vp-eng-001", "target_id": "dept-qa-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-be-api", "source_id": "dept-backend-001", "target_id": "team-api-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-be-data", "source_id": "dept-backend-001", "target_id": "team-data-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-be-infra", "source_id": "dept-backend-001", "target_id": "team-infra-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-fe-web", "source_id": "dept-frontend-001", "target_id": "team-web-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-fe-mob", "source_id": "dept-frontend-001", "target_id": "team-mobile-001", "label": "", "edge_type": "hierarchy"}
+  ]
+}

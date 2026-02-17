@@ -1,0 +1,78 @@
+{
+  "diagram_type": "business_process",
+  "nodes": [
+    {
+      "id": "bp-start-001",
+      "label": "Customer Places Order",
+      "description": "Customer selects products and submits an order via the web or mobile app.",
+      "node_type": "process",
+      "parent_id": null,
+      "permission_level": "public"
+    },
+    {
+      "id": "bp-validate-001",
+      "label": "Order Validation",
+      "description": "System validates payment, stock availability, and shipping address.",
+      "node_type": "process",
+      "parent_id": "bp-start-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "bp-payment-001",
+      "label": "Payment Processing",
+      "description": "Payment gateway charges the customer. Stripe or PayPal integration.",
+      "node_type": "process",
+      "parent_id": "bp-validate-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "bp-fraud-001",
+      "label": "Fraud Detection",
+      "description": "ML-based fraud scoring system reviews each transaction. Flagged orders go to manual review.",
+      "node_type": "process",
+      "parent_id": "bp-payment-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "bp-fulfill-001",
+      "label": "Warehouse Fulfillment",
+      "description": "Warehouse team picks, packs, and ships the order.",
+      "node_type": "process",
+      "parent_id": "bp-fraud-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "bp-shipping-001",
+      "label": "Carrier Dispatch",
+      "description": "Shipping label generated and order handed to carrier (FedEx, UPS, USPS).",
+      "node_type": "process",
+      "parent_id": "bp-fulfill-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "bp-notify-001",
+      "label": "Customer Notification",
+      "description": "Automated email/SMS sent with tracking number and estimated delivery date.",
+      "node_type": "process",
+      "parent_id": "bp-shipping-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "bp-refund-001",
+      "label": "Refund & Returns Pipeline",
+      "description": "Internal process: customer raises return, warehouse inspects, refund issued via original payment method. Detailed SLAs and cost breakdown.",
+      "node_type": "process",
+      "parent_id": "bp-payment-001",
+      "permission_level": "admin"
+    }
+  ],
+  "edges": [
+    {"id": "ebp-1", "source_id": "bp-start-001", "target_id": "bp-validate-001", "label": "", "edge_type": "flow"},
+    {"id": "ebp-2", "source_id": "bp-validate-001", "target_id": "bp-payment-001", "label": "valid", "edge_type": "flow"},
+    {"id": "ebp-3", "source_id": "bp-payment-001", "target_id": "bp-fraud-001", "label": "charged", "edge_type": "flow"},
+    {"id": "ebp-4", "source_id": "bp-fraud-001", "target_id": "bp-fulfill-001", "label": "approved", "edge_type": "flow"},
+    {"id": "ebp-5", "source_id": "bp-fulfill-001", "target_id": "bp-shipping-001", "label": "", "edge_type": "flow"},
+    {"id": "ebp-6", "source_id": "bp-shipping-001", "target_id": "bp-notify-001", "label": "", "edge_type": "flow"},
+    {"id": "ebp-7", "source_id": "bp-payment-001", "target_id": "bp-refund-001", "label": "return request", "edge_type": "flow"}
+  ]
+}

@@ -1,6 +1,7 @@
 """FastAPI backend for the Pulse documentation & visualization agent.
 
-Provides a streaming SSE endpoint for chat interactions with the LangGraph agent.
+Provides a streaming SSE endpoint for chat interactions with the LangGraph agent,
+plus auth and org-chart API routes.
 
 Usage:
     cd backend
@@ -17,7 +18,10 @@ from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
 from src.agent import agent
+from src.auth import USERS, create_session
 from src.config import FRONTEND_URL
+from src.routers import admin as admin_router
+from src.routers import org as org_router
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -41,6 +45,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount routers
+app.include_router(org_router.router, prefix="/api/org")
+app.include_router(admin_router.router, prefix="/api/admin")
+
 
 # ---------------------------------------------------------------------------
 # Request / Response models
@@ -53,8 +61,32 @@ class ChatRequest(BaseModel):
     history: list[dict] = []
 
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
 # ---------------------------------------------------------------------------
-# Endpoints
+# Auth endpoints
+# ---------------------------------------------------------------------------
+
+@app.post("/api/auth/login")
+async def login(body: LoginRequest) -> dict:
+    """Validate credentials and return a session token."""
+    user = USERS.get(body.username)
+    if not user or user["password"] != body.password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_session(body.username, user["role"])
+    return {
+        "token": token,
+        "username": body.username,
+        "role": user["role"],
+        "name": user["name"],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Health
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
@@ -63,6 +95,9 @@ async def health():
     return {"status": "ok"}
 
 
+# ---------------------------------------------------------------------------
+# Chat endpoint
+# ---------------------------------------------------------------------------
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
@@ -70,16 +105,13 @@ async def chat(request: ChatRequest):
 
     async def event_generator():
         try:
-            # Invoke the LangGraph agent
             result = await _run_agent(request.message, request.history)
 
-            # Stream intent event
             yield {
                 "event": "intent",
                 "data": json.dumps({"intent": result.get("intent", "retrieve_info")}),
             }
 
-            # Stream the answer event
             yield {
                 "event": "answer",
                 "data": json.dumps({
@@ -89,7 +121,6 @@ async def chat(request: ChatRequest):
                 }),
             }
 
-            # Signal completion
             yield {
                 "event": "done",
                 "data": json.dumps({"status": "complete"}),
@@ -116,7 +147,6 @@ async def _run_agent(message: str, history: list[dict]) -> dict:
         "diagram_code": "",
     }
 
-    # LangGraph invoke (runs synchronously internally, but we wrap for async compat)
     import asyncio
     result = await asyncio.to_thread(agent.invoke, initial_state)
     return result
