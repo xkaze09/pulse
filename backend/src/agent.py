@@ -191,9 +191,15 @@ def visualizer_node(state: AgentState) -> dict:
     diagram_code = response.content.strip()
     if diagram_code.startswith("```"):
         lines = diagram_code.split("\n")
-        # Remove first and last lines (``` markers)
         lines = [l for l in lines if not l.strip().startswith("```")]
         diagram_code = "\n".join(lines).strip()
+
+    # Fix common LLM Mermaid syntax mistakes
+    import re
+    # -->|label|> B  →  -->|label| B
+    diagram_code = re.sub(r"(\|[^|]*)\|>", r"\1|", diagram_code)
+    # -- label --> B  →  -->|label| B
+    diagram_code = re.sub(r"--\s+([^->\n]+?)\s+-->", r"-->|\1|", diagram_code)
 
     return {
         "context": [{"page_content": d.page_content, "metadata": d.metadata} for d in docs],
