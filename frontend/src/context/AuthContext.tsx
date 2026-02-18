@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -19,12 +20,15 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Lazy initializer — runs synchronously on client mount, reads localStorage once
-  const [user, setUser] = useState<AuthUser | null>(() =>
-    typeof window !== "undefined" ? getStoredAuth() : null
-  );
-  // With sync initialization there is no async loading phase
-  const loading = false;
+  // Start with loading:true so server and client agree on the initial render.
+  // localStorage is read in useEffect (client-only) to avoid hydration mismatch.
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setUser(getStoredAuth());
+    setLoading(false);
+  }, []);
 
   function login(u: AuthUser) {
     setStoredAuth(u);
