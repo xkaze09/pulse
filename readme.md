@@ -1,113 +1,141 @@
-# Pulse — Enterprise Documentation & Visualization Agent
+# Pulse — Org Visualization Platform
 
-A RAG-based AI agent that helps employees find documentation links quickly and generates structural visualizations (org charts, process flows) on the fly from document content.
+An enterprise platform for exploring org charts, business processes, and workflows with role-based access control. Includes an AI-powered documentation assistant (RAG chat) that answers questions from your uploaded documents and org data.
+
+## Features
+
+- **Interactive org canvas** — Mermaid.js diagrams for org charts, business processes, and workflows. Click any node to view details.
+- **Role-gated access** — Admin, Manager, and Viewer tiers. Restricted nodes appear blurred for lower-privilege roles.
+- **AI chat widget** — Floating assistant answers questions from ingested PDFs, Excel files, Markdown, and org JSON data.
+- **Admin panel** — Add, edit, and delete nodes and edges for any diagram type directly in the UI.
+- **Free-tier LLM** — Powered by Groq (Llama 3.3 70B). No OpenAI key required. Embeddings run locally via ChromaDB's bundled ONNX model (~80 MB, downloaded once).
+
+---
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Frontend (Next.js)                       │
-│  ┌────────────┐  ┌───────────────┐  ┌────────────────────────┐  │
-│  │ Chat Input  │→│ MessageBubble │→│ MermaidRenderer / Sources│  │
-│  └────────────┘  └───────────────┘  └────────────────────────┘  │
-│                          │ SSE                                  │
-└──────────────────────────┼──────────────────────────────────────┘
-                           ▼
+│                        Frontend (Next.js)                        │
+│                                                                  │
+│  ┌──────────┐  ┌──────────────┐  ┌───────────┐  ┌───────────┐  │
+│  │  Login   │  │  Org Canvas  │  │  Admin    │  │   Chat    │  │
+│  │  Page    │  │  (Mermaid)   │  │  Panel    │  │  Widget   │  │
+│  └──────────┘  └──────────────┘  └───────────┘  └───────────┘  │
+│                        │ REST / SSE                              │
+└────────────────────────┼────────────────────────────────────────┘
+                         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Backend (FastAPI)                           │
-│                   POST /api/chat (SSE)                           │
+│                       Backend (FastAPI)                          │
+│                                                                  │
+│  POST /api/auth/login          — session token                   │
+│  GET  /api/org/diagram/{type}  — permission-filtered diagram     │
+│  CRUD /api/org/nodes/{type}    — admin node management           │
+│  CRUD /api/org/edges/{type}    — admin edge management           │
+│  POST /api/chat (SSE)          — LangGraph RAG agent             │
+│                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                  LangGraph Agent                          │   │
-│  │                                                           │   │
-│  │   ┌────────┐    ┌────────────┐    ┌──────────────┐       │   │
-│  │   │ Router │───→│ Retriever  │───→│ Text Answer  │       │   │
-│  │   │(GPT-4o │    │  (RAG, k=5)│    │ + Sources    │       │   │
-│  │   │ -mini) │    └────────────┘    └──────────────┘       │   │
-│  │   │        │                                              │   │
-│  │   │        │    ┌────────────┐    ┌──────────────┐       │   │
-│  │   │        │───→│ Visualizer │───→│ Mermaid Code │       │   │
-│  │   │        │    │ (RAG, k=10)│    │ + Sources    │       │   │
-│  │   └────────┘    └────────────┘    └──────────────┘       │   │
+│  │                   LangGraph Agent                         │   │
+│  │   Router (llama-3.1-8b) → Retriever / Visualizer         │   │
+│  │                     (llama-3.3-70b)                       │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │                          │                                       │
-│                    ┌─────┴─────┐                                 │
-│                    │ ChromaDB  │                                  │
-│                    │ (Vectors) │                                  │
-│                    └───────────┘                                  │
+│                    ┌─────┴──────┐                                │
+│                    │  ChromaDB  │  ← PDFs, Excel, Markdown,      │
+│                    │  (local)   │     org JSON files             │
+│                    └────────────┘                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+---
+
 ## Tech Stack
 
-| Layer          | Technology                                      |
-| -------------- | ----------------------------------------------- |
-| LLM            | OpenAI GPT-4o (answers & diagrams), GPT-4o-mini (routing) |
-| Orchestration  | LangChain + LangGraph (Python)                  |
-| Vector DB      | ChromaDB (local, swappable to Pinecone)         |
-| Embeddings     | OpenAI `text-embedding-3-small` (1536 dims)     |
-| Backend        | Python / FastAPI / SSE                           |
-| Frontend       | Next.js 15 (App Router) + Tailwind CSS          |
-| Visualization  | Mermaid.js + react-markdown                       |
+| Layer         | Technology                                              |
+|---------------|---------------------------------------------------------|
+| LLM           | Groq — `llama-3.3-70b-versatile` (answers & diagrams), `llama-3.1-8b-instant` (routing) |
+| Embeddings    | ChromaDB bundled ONNX model (all-MiniLM-L6-v2, local, no API key) |
+| Orchestration | LangChain + LangGraph                                   |
+| Vector DB     | ChromaDB (local persistence)                            |
+| Backend       | Python / FastAPI / SSE                                  |
+| Frontend      | Next.js 15 (App Router) + Tailwind CSS                  |
+| Visualization | Mermaid.js                                              |
+
+---
 
 ## Project Structure
 
 ```
 pulse/
 ├── backend/
-│   ├── pyproject.toml          # Python dependencies (Poetry/pip)
-│   ├── .env.example            # Environment variables template
+│   ├── pyproject.toml
+│   ├── .env.example
 │   ├── src/
-│   │   ├── __init__.py
-│   │   ├── main.py             # FastAPI app & /api/chat endpoint
-│   │   ├── agent.py            # LangGraph workflow (Router → Retriever/Visualizer)
-│   │   ├── ingest.py           # Document ingestion pipeline
-│   │   ├── config.py           # Configuration loader
-│   │   ├── prompts.py          # System prompts
-│   │   └── create_dummy_pdf.py # Dummy PDF generator for demo
-│   └── data/
-│       ├── documents/          # Source PDFs (drop files here)
-│       └── url_map.json        # filename → public URL mapping
+│   │   ├── main.py          # FastAPI app — auth, org, and chat endpoints
+│   │   ├── agent.py         # LangGraph state machine (Router → Retriever/Visualizer)
+│   │   ├── auth.py          # Session-based auth, hardcoded users
+│   │   ├── ingest.py        # Document ingestion pipeline (PDF, Excel, Markdown, JSON)
+│   │   ├── config.py        # Env var loader
+│   │   ├── prompts.py       # LLM system prompts
+│   │   ├── embeddings.py    # Local embedding wrapper
+│   │   └── routers/
+│   │       ├── org.py       # Org diagram CRUD endpoints
+│   │       └── admin.py     # Admin ingestion trigger endpoint
+│   ├── data/
+│   │   ├── documents/       # Drop PDFs / Excel / Markdown here for ingestion
+│   │   ├── org/             # Org chart, business process, workflow JSON files
+│   │   └── url_map.json     # filename → public URL mapping for source citations
+│   └── tests/
+│       └── test_smoke.py    # Integration smoke tests (20 tests)
 ├── frontend/
-│   ├── package.json            # Node.js dependencies (pnpm)
-│   ├── .env.local.example      # Frontend env template
 │   └── src/
 │       ├── app/
-│       │   ├── layout.tsx      # Root layout
-│       │   ├── page.tsx        # Main page with header + chat
-│       │   └── globals.css     # Global styles
+│       │   ├── (auth)/login/         # Login page
+│       │   └── (platform)/           # Auth-guarded shell
+│       │       ├── layout.tsx        # Sidebar + Navbar + ChatWidget
+│       │       ├── dashboard/        # Role-aware landing page
+│       │       ├── org/              # Org chart canvas
+│       │       ├── processes/        # Business process canvas
+│       │       ├── workflows/        # Workflow canvas
+│       │       └── admin/            # Admin-only node/edge management
 │       ├── components/
-│       │   ├── ChatInterface.tsx    # Chat state & input management
-│       │   ├── MessageBubble.tsx    # Message rendering (markdown + diagrams)
-│       │   ├── MermaidRenderer.tsx  # Mermaid.js → SVG renderer
-│       │   └── SourceList.tsx       # Clickable source badges
-│       └── lib/
-│           └── chatApi.ts      # SSE client helper
-├── docs/
-│   └── USAGE.md                # Detailed usage guide
+│       │   ├── canvas/               # OrgCanvas, NodeDetailPanel
+│       │   ├── chat/                 # ChatWidget (floating)
+│       │   ├── layout/               # Sidebar, Navbar
+│       │   ├── admin/                # AdminPanel, NodeFormModal, EdgeFormModal
+│       │   └── dashboard/            # DashboardView
+│       ├── context/AuthContext.tsx   # Auth state (React Context)
+│       ├── lib/
+│       │   ├── api.ts                # Authenticated fetch wrapper + org API calls
+│       │   └── auth.ts               # Login, localStorage token helpers
+│       └── types/org.ts             # Shared TypeScript types
 ├── .gitignore
-└── README.md                   # This file
+└── README.md
 ```
+
+---
 
 ## Quick Start
 
 ### Prerequisites
 
-- **Python** 3.11+
-- **Node.js** 18+ and **pnpm**
-- **OpenAI API key** with access to GPT-4o
+- Python 3.11+
+- Node.js 18+ and pnpm
+- A free [Groq API key](https://console.groq.com)
 
 ### 1. Clone & Configure
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/xkaze09/pulse.git
 cd pulse
 
-# Backend environment
+# Backend
 cp backend/.env.example backend/.env
-# Edit backend/.env and add your OPENAI_API_KEY
+# Open backend/.env and set GROQ_API_KEY
 
-# Frontend environment
-cp frontend/.env.local.example frontend/.env.local
+# Frontend
+# Create frontend/.env.local if you need a non-default API URL
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > frontend/.env.local
 ```
 
 ### 2. Setup Backend
@@ -115,18 +143,19 @@ cp frontend/.env.local.example frontend/.env.local
 ```bash
 cd backend
 
-# Create virtual environment
+# Create and activate virtual environment
 python -m venv .venv
 
-# Activate (Windows)
+# Windows
 .venv\Scripts\activate
-# Activate (macOS/Linux)
-# source .venv/bin/activate
+# macOS/Linux
+source .venv/bin/activate
 
 # Install dependencies
 pip install -e .
 
-# Run document ingestion (creates ChromaDB vector store)
+# Ingest documents into ChromaDB
+# (This also indexes org JSON files from data/org/)
 python -m src.ingest
 
 # Start the API server
@@ -137,73 +166,170 @@ uvicorn src.main:app --reload --port 8000
 
 ```bash
 cd frontend
-
-# Install dependencies
 pnpm install
-
-# Start development server
 pnpm dev
 ```
 
-### 4. Use the App
+### 4. Open the App
 
-Open **http://localhost:3000** in your browser.
+Go to **http://localhost:3000** and log in with one of the demo accounts:
 
-Try these example queries:
-- `"What is the HR leave policy?"` — returns a text answer with source links
-- `"Visualize the checkout process"` — returns a rendered flowchart
-- `"Show the engineering org chart"` — returns a hierarchy diagram
+| Username  | Password     | Role    | Access                              |
+|-----------|--------------|---------|-------------------------------------|
+| `admin`   | `admin123`   | Admin   | All nodes + admin panel             |
+| `manager` | `manager123` | Manager | Public + manager nodes              |
+| `viewer`  | `viewer123`  | Viewer  | Public nodes only (others blurred)  |
+
+---
+
+## Adding Documents
+
+1. Drop PDF, Excel (`.xlsx`), or Markdown (`.md`) files into `backend/data/documents/`
+2. Optionally add URL mappings to `backend/data/url_map.json`:
+   ```json
+   { "my-policy.pdf": "https://company.com/docs/my-policy" }
+   ```
+3. Re-run ingestion:
+   ```bash
+   cd backend && python -m src.ingest
+   ```
+
+The chat widget will immediately answer questions from the new documents.
+
+---
+
+## Editing Org Data
+
+Org charts, business processes, and workflows are stored as JSON in `backend/data/org/`:
+
+- `org_chart.json`
+- `business_process.json`
+- `workflow.json`
+
+Each file has `nodes` and `edges`. Nodes have a `permission_level` field:
+
+| `permission_level` | Visible to        |
+|--------------------|-------------------|
+| `"public"`         | All roles         |
+| `"manager"`        | Manager + Admin   |
+| `"admin"`          | Admin only        |
+
+You can edit the JSON files directly, or use the **Admin Panel** in the UI (`/admin` — admin role required) to add, edit, and delete nodes and edges without touching the files.
+
+After editing org JSON files, re-run ingestion so the chat assistant reflects the changes.
+
+---
 
 ## Environment Variables
 
 ### Backend (`backend/.env`)
 
-| Variable           | Description                          | Default                   |
-| ------------------ | ------------------------------------ | ------------------------- |
-| `OPENAI_API_KEY`   | Your OpenAI API key                  | *(required)*              |
-| `CHROMA_PERSIST_DIR` | ChromaDB storage directory         | `./chroma_store`          |
-| `COLLECTION_NAME`  | Vector store collection name         | `doc-agent-index`         |
-| `EMBEDDING_MODEL`  | OpenAI embedding model               | `text-embedding-3-small`  |
-| `LLM_MODEL`        | Main LLM for answers & diagrams      | `gpt-4o`                  |
-| `ROUTER_MODEL`     | LLM for intent classification        | `gpt-4o-mini`             |
-| `HOST`             | Server host                          | `0.0.0.0`                 |
-| `PORT`             | Server port                          | `8000`                    |
-| `FRONTEND_URL`     | Frontend URL (for CORS)              | `http://localhost:3000`   |
+| Variable             | Description                              | Default                  |
+|----------------------|------------------------------------------|--------------------------|
+| `GROQ_API_KEY`       | Your Groq API key                        | *(required)*             |
+| `CHROMA_PERSIST_DIR` | ChromaDB storage directory               | `./chroma_store`         |
+| `COLLECTION_NAME`    | Vector store collection name             | `doc-agent-index`        |
+| `LLM_MODEL`          | Groq model for answers and diagrams      | `llama-3.3-70b-versatile`|
+| `ROUTER_MODEL`       | Groq model for intent classification     | `llama-3.1-8b-instant`   |
+| `HOST`               | Server host                              | `0.0.0.0`                |
+| `PORT`               | Server port                              | `8000`                   |
+| `FRONTEND_URL`       | Frontend URL (CORS allowlist)            | `http://localhost:3000`  |
+| `SESSION_SECRET`     | Secret for session tokens                | `dev-only-change-in-prod`|
 
 ### Frontend (`frontend/.env.local`)
 
-| Variable               | Description             | Default                  |
-| ---------------------- | ----------------------- | ------------------------ |
-| `NEXT_PUBLIC_API_URL`  | Backend API URL          | `http://localhost:8000`  |
+| Variable              | Description      | Default                 |
+|-----------------------|------------------|-------------------------|
+| `NEXT_PUBLIC_API_URL` | Backend API URL  | `http://localhost:8000` |
+
+---
 
 ## API Reference
 
-### `GET /health`
+### Auth
 
-Health check endpoint.
+#### `POST /api/auth/login`
+```json
+{ "username": "admin", "password": "admin123" }
+```
+Returns: `{ "token": "...", "username": "admin", "role": "admin", "name": "Admin User" }`
 
-**Response:** `{ "status": "ok" }`
+Pass the token as `Authorization: Bearer <token>` on all subsequent requests.
 
-### `POST /api/chat`
+---
 
-Send a message to the agent. Returns Server-Sent Events (SSE).
+### Org Diagrams
 
-**Request Body:**
+#### `GET /api/org/diagram/{type}`
+Returns a permission-filtered diagram for `org_chart`, `business_process`, or `workflow`.
+
 ```json
 {
-  "message": "What is the deployment process?",
-  "history": []
+  "diagram_type": "org_chart",
+  "nodes": [
+    {
+      "id": "ceo-001",
+      "type": "orgNode",
+      "data": {
+        "label": "CEO",
+        "description": "Chief Executive Officer",
+        "node_type": "person",
+        "permission_level": "public",
+        "is_restricted": false
+      }
+    }
+  ],
+  "edges": [{ "id": "e1", "source": "ceo-001", "target": "cto-001" }]
 }
+```
+
+Nodes the caller's role cannot see are returned with `"label": "Restricted"` and `"is_restricted": true` rather than being omitted entirely (so the canvas can render them blurred).
+
+#### Admin-only node/edge CRUD
+
+| Method   | Path                          | Description         |
+|----------|-------------------------------|---------------------|
+| `GET`    | `/api/org/nodes/{type}`       | List all raw nodes  |
+| `POST`   | `/api/org/nodes/{type}`       | Create a node       |
+| `PATCH`  | `/api/org/nodes/{type}/{id}`  | Update a node       |
+| `DELETE` | `/api/org/nodes/{type}/{id}`  | Delete a node       |
+| `POST`   | `/api/org/edges/{type}`       | Create an edge      |
+| `DELETE` | `/api/org/edges/{type}/{id}`  | Delete an edge      |
+
+---
+
+### Chat
+
+#### `POST /api/chat`
+Streams Server-Sent Events.
+
+**Request:**
+```json
+{ "message": "How does the customer place an order?", "history": [] }
 ```
 
 **SSE Events:**
 
-| Event    | Data                                                                 |
-| -------- | -------------------------------------------------------------------- |
-| `intent` | `{ "intent": "retrieve_info" \| "generate_diagram" }`               |
-| `answer` | `{ "text": "...", "diagram_code": "...", "sources": [...] }`         |
-| `done`   | `{ "status": "complete" }`                                           |
-| `error`  | `{ "error": "..." }`                                                 |
+| Event    | Data                                                         |
+|----------|--------------------------------------------------------------|
+| `intent` | `{ "intent": "retrieve_info" \| "generate_diagram" }`       |
+| `answer` | `{ "text": "...", "diagram_code": "...", "sources": [...] }` |
+| `done`   | `{ "status": "complete" }`                                   |
+| `error`  | `{ "error": "..." }`                                         |
+
+---
+
+## Running Tests
+
+```bash
+cd backend
+pip install pytest httpx
+python -m pytest tests/test_smoke.py -v
+```
+
+Runs 20 integration tests covering auth, permission filtering, and the RAG chat pipeline. The backend must be running on port 8000.
+
+---
 
 ## License
 
