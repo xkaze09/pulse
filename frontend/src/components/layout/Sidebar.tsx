@@ -7,6 +7,7 @@ import {
   Network,
   GitBranch,
   Workflow,
+  BookOpen,
   ShieldCheck,
   LogOut,
   Zap,
@@ -25,6 +26,10 @@ const NAV_LINKS = [
   { href: "/org",        label: "Org Chart",           Icon: Network },
   { href: "/processes",  label: "Business Processes",  Icon: GitBranch },
   { href: "/workflows",  label: "Workflows",            Icon: Workflow },
+];
+
+const POLICY_LINKS = [
+  { href: "/hr",  label: "HR Policy",  Icon: BookOpen },
 ];
 
 export function Sidebar() {
@@ -60,6 +65,31 @@ export function Sidebar() {
                   className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     active
                       ? "bg-blue-50 text-blue-700"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+
+          {/* Policies section */}
+          <li className="mt-3 mb-1 px-3">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+              Policies
+            </span>
+          </li>
+          {POLICY_LINKS.map(({ href, label, Icon }) => {
+            const active = pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    active
+                      ? "bg-amber-50 text-amber-700"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >

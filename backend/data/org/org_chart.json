@@ -4,7 +4,7 @@
     {
       "id": "ceo-001",
       "label": "CEO",
-      "description": "Chief Executive Officer — overall strategic leadership",
+      "description": "Chief Executive Officer — overall company strategy and leadership. Reports to the Board of Directors. Contact via executive assistant for escalations.",
       "node_type": "person",
       "parent_id": null,
       "permission_level": "public"
@@ -12,94 +12,157 @@
     {
       "id": "cto-001",
       "label": "CTO",
-      "description": "Chief Technology Officer — Sarah Chen",
+      "description": "Chief Technology Officer — technology vision and engineering leadership. Oversees Engineering and IT Support departments. Contact for technology strategy decisions.",
       "node_type": "person",
       "parent_id": "ceo-001",
       "permission_level": "public"
     },
     {
-      "id": "vp-eng-001",
-      "label": "VP Engineering",
-      "description": "Michael Roberts — oversees all engineering teams",
+      "id": "coo-001",
+      "label": "COO",
+      "description": "Chief Operations Officer — oversees day-to-day operational processes and the Operations department including Customer Support.",
       "node_type": "person",
+      "parent_id": "ceo-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "cfo-001",
+      "label": "CFO",
+      "description": "Chief Finance Officer — oversees financial planning, reporting, and the Finance department. Contact for budget approvals and financial queries.",
+      "node_type": "person",
+      "parent_id": "ceo-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "dept-engineering-001",
+      "label": "Engineering",
+      "description": "Engineering department under the CTO. Contains Backend, Frontend, and DevOps teams. Responsible for all software development and infrastructure.",
+      "node_type": "department",
       "parent_id": "cto-001",
       "permission_level": "public"
     },
     {
-      "id": "dept-backend-001",
-      "label": "Backend Engineering",
-      "description": "Director: James Wilson. Teams: API, Data, Infrastructure",
+      "id": "dept-itsupport-001",
+      "label": "IT Support",
+      "description": "IT Support department under the CTO. Manages internal IT infrastructure, hardware provisioning, and employee technical support.",
       "node_type": "department",
-      "parent_id": "vp-eng-001",
+      "parent_id": "cto-001",
       "permission_level": "public"
     },
     {
-      "id": "dept-frontend-001",
-      "label": "Frontend Engineering",
-      "description": "Director: Emily Zhang. Teams: Web, Mobile",
+      "id": "dept-operations-001",
+      "label": "Operations",
+      "description": "Operations department under the COO. Manages the Customer Support Team and operational processes. Contact: COO for escalations.",
       "node_type": "department",
-      "parent_id": "vp-eng-001",
+      "parent_id": "coo-001",
       "permission_level": "public"
     },
     {
-      "id": "dept-qa-001",
-      "label": "QA Engineering",
-      "description": "Director: David Kim. Teams: Automation, Manual QA",
+      "id": "dept-finance-001",
+      "label": "Finance",
+      "description": "Finance department under the CFO. Manages budgeting, payroll, financial reporting, and the Financial System Upgrade project.",
       "node_type": "department",
-      "parent_id": "vp-eng-001",
+      "parent_id": "cfo-001",
       "permission_level": "public"
     },
     {
-      "id": "team-api-001",
-      "label": "API Team",
-      "description": "Lead: Lisa Park. Builds and maintains REST & GraphQL APIs.",
+      "id": "team-backend-001",
+      "label": "Backend Team",
+      "description": "Team Lead: Alice Reyes (alice.reyes@company.com). 6 members. Responsible for developing and maintaining backend services and APIs. Currently running the Microservices Migration project (P-001, $150K budget).",
       "node_type": "team",
-      "parent_id": "dept-backend-001",
+      "parent_id": "dept-engineering-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "team-frontend-001",
+      "label": "Frontend Team",
+      "description": "Team Lead: Mark Santos (mark.santos@company.com). 5 members. Develops all user interfaces and web products. Currently leading the Customer Portal Revamp project (P-002, $80K budget).",
+      "node_type": "team",
+      "parent_id": "dept-engineering-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "team-devops-001",
+      "label": "DevOps Team",
+      "description": "Team Lead: John Cruz (john.cruz@company.com). 4 members. Manages CI/CD pipelines, cloud infrastructure, and Kubernetes. Running Infrastructure Automation project (P-003, $120K budget).",
+      "node_type": "team",
+      "parent_id": "dept-engineering-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "team-support-001",
+      "label": "Customer Support Team",
+      "description": "Team Lead: Liza Gomez (liza.gomez@company.com). 8 members. Handles customer inquiries, issues, and the Customer Experience Program (P-004, completed).",
+      "node_type": "team",
+      "parent_id": "dept-operations-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "team-finance-001",
+      "label": "Finance Team",
+      "description": "Team Lead: Robert Tan (robert.tan@company.com). 3 members. Manages payroll, financial reporting, and the Financial System Upgrade (P-005, $90K budget).",
+      "node_type": "team",
+      "parent_id": "dept-finance-001",
       "permission_level": "manager"
     },
     {
-      "id": "team-data-001",
-      "label": "Data Platform Team",
-      "description": "Lead: Raj Patel. Manages data pipelines and analytics.",
-      "node_type": "team",
-      "parent_id": "dept-backend-001",
+      "id": "person-alice-001",
+      "label": "Alice Reyes — Backend Lead",
+      "description": "Employee ID: 1001. Role: Backend Lead. Full-time. Contact: alice.reyes@company.com. Contact for: backend API issues, Microservices Migration project, backend developer questions.",
+      "node_type": "person",
+      "parent_id": "team-backend-001",
       "permission_level": "manager"
     },
     {
-      "id": "team-infra-001",
-      "label": "Infrastructure Team",
-      "description": "Lead: Ana Martinez. Cloud infra, Kubernetes, CI/CD.",
-      "node_type": "team",
-      "parent_id": "dept-backend-001",
+      "id": "person-mark-001",
+      "label": "Mark Santos — Frontend Lead",
+      "description": "Employee ID: 1002. Role: Frontend Lead. Full-time. Contact: mark.santos@company.com. Contact for: UI/UX issues, Customer Portal Revamp project, frontend developer questions.",
+      "node_type": "person",
+      "parent_id": "team-frontend-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "person-john-001",
+      "label": "John Cruz — DevOps Lead",
+      "description": "Employee ID: 1003. Role: DevOps Lead. Full-time. Contact: john.cruz@company.com. Contact for: deployment issues, CI/CD pipeline, infrastructure and cloud resources.",
+      "node_type": "person",
+      "parent_id": "team-devops-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "person-liza-001",
+      "label": "Liza Gomez — Support Lead",
+      "description": "Employee ID: 1004. Role: Support Lead. Full-time. Contact: liza.gomez@company.com. Contact for: customer complaints, support escalations, Customer Experience Program.",
+      "node_type": "person",
+      "parent_id": "team-support-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "person-robert-001",
+      "label": "Robert Tan — Finance Manager",
+      "description": "Employee ID: 1005. Role: Finance Manager. Full-time. Contact: robert.tan@company.com. Contact for: budget requests, expense reports, payroll queries, Financial System Upgrade.",
+      "node_type": "person",
+      "parent_id": "team-finance-001",
       "permission_level": "admin"
-    },
-    {
-      "id": "team-web-001",
-      "label": "Web Team",
-      "description": "Lead: Chris Johnson. Builds all web frontend products.",
-      "node_type": "team",
-      "parent_id": "dept-frontend-001",
-      "permission_level": "manager"
-    },
-    {
-      "id": "team-mobile-001",
-      "label": "Mobile Team",
-      "description": "Lead: Priya Sharma. iOS and Android apps.",
-      "node_type": "team",
-      "parent_id": "dept-frontend-001",
-      "permission_level": "manager"
     }
   ],
   "edges": [
-    {"id": "e-ceo-cto", "source_id": "ceo-001", "target_id": "cto-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-cto-vp", "source_id": "cto-001", "target_id": "vp-eng-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-vp-be", "source_id": "vp-eng-001", "target_id": "dept-backend-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-vp-fe", "source_id": "vp-eng-001", "target_id": "dept-frontend-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-vp-qa", "source_id": "vp-eng-001", "target_id": "dept-qa-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-be-api", "source_id": "dept-backend-001", "target_id": "team-api-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-be-data", "source_id": "dept-backend-001", "target_id": "team-data-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-be-infra", "source_id": "dept-backend-001", "target_id": "team-infra-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-fe-web", "source_id": "dept-frontend-001", "target_id": "team-web-001", "label": "", "edge_type": "hierarchy"},
-    {"id": "e-fe-mob", "source_id": "dept-frontend-001", "target_id": "team-mobile-001", "label": "", "edge_type": "hierarchy"}
+    {"id": "e-ceo-cto",   "source_id": "ceo-001",              "target_id": "cto-001",             "label": "", "edge_type": "hierarchy"},
+    {"id": "e-ceo-coo",   "source_id": "ceo-001",              "target_id": "coo-001",             "label": "", "edge_type": "hierarchy"},
+    {"id": "e-ceo-cfo",   "source_id": "ceo-001",              "target_id": "cfo-001",             "label": "", "edge_type": "hierarchy"},
+    {"id": "e-cto-eng",   "source_id": "cto-001",              "target_id": "dept-engineering-001","label": "", "edge_type": "hierarchy"},
+    {"id": "e-cto-it",    "source_id": "cto-001",              "target_id": "dept-itsupport-001",  "label": "", "edge_type": "hierarchy"},
+    {"id": "e-coo-ops",   "source_id": "coo-001",              "target_id": "dept-operations-001", "label": "", "edge_type": "hierarchy"},
+    {"id": "e-cfo-fin",   "source_id": "cfo-001",              "target_id": "dept-finance-001",    "label": "", "edge_type": "hierarchy"},
+    {"id": "e-eng-be",    "source_id": "dept-engineering-001", "target_id": "team-backend-001",    "label": "", "edge_type": "hierarchy"},
+    {"id": "e-eng-fe",    "source_id": "dept-engineering-001", "target_id": "team-frontend-001",   "label": "", "edge_type": "hierarchy"},
+    {"id": "e-eng-do",    "source_id": "dept-engineering-001", "target_id": "team-devops-001",     "label": "", "edge_type": "hierarchy"},
+    {"id": "e-ops-cs",    "source_id": "dept-operations-001",  "target_id": "team-support-001",    "label": "", "edge_type": "hierarchy"},
+    {"id": "e-fin-ft",    "source_id": "dept-finance-001",     "target_id": "team-finance-001",    "label": "", "edge_type": "hierarchy"},
+    {"id": "e-be-alice",  "source_id": "team-backend-001",     "target_id": "person-alice-001",    "label": "lead", "edge_type": "hierarchy"},
+    {"id": "e-fe-mark",   "source_id": "team-frontend-001",    "target_id": "person-mark-001",     "label": "lead", "edge_type": "hierarchy"},
+    {"id": "e-do-john",   "source_id": "team-devops-001",      "target_id": "person-john-001",     "label": "lead", "edge_type": "hierarchy"},
+    {"id": "e-cs-liza",   "source_id": "team-support-001",     "target_id": "person-liza-001",     "label": "lead", "edge_type": "hierarchy"},
+    {"id": "e-ft-robert", "source_id": "team-finance-001",     "target_id": "person-robert-001",   "label": "lead", "edge_type": "hierarchy"}
   ]
 }

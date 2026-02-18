@@ -1,5 +1,5 @@
 export type Role = "admin" | "manager" | "viewer";
-export type DiagramType = "org_chart" | "business_process" | "workflow";
+export type DiagramType = "org_chart" | "business_process" | "workflow" | "hr_policy";
 export type PermissionLevel = "public" | "manager" | "admin";
 
 export interface AuthUser {

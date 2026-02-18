@@ -1,0 +1,100 @@
+{
+  "diagram_type": "hr_policy",
+  "nodes": [
+    {
+      "id": "hr-req-001",
+      "label": "Employee Leave Request",
+      "description": "Employee submits a leave request via the HR portal, specifying the leave type, dates, and reason. At least 2 business days notice required.",
+      "node_type": "process",
+      "parent_id": null,
+      "permission_level": "public"
+    },
+    {
+      "id": "hr-annual-001",
+      "label": "Annual Leave",
+      "description": "20 days per year. Accrues at 1.67 days/month. Up to 5 days carry-over allowed. Minimum 2 weeks notice for 5+ day requests.",
+      "node_type": "process",
+      "parent_id": "hr-req-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "hr-sick-001",
+      "label": "Sick Leave",
+      "description": "10 days per year. No carry-over. First 3 consecutive days need no medical certificate. Certificate required for absences over 3 days.",
+      "node_type": "process",
+      "parent_id": "hr-req-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "hr-parental-001",
+      "label": "Parental Leave",
+      "description": "Maternity: 16 weeks (full pay for first 8 weeks, 50% for next 8). Paternity: 2 weeks full pay within 3 months of birth. Adoption: same as maternity.",
+      "node_type": "process",
+      "parent_id": "hr-req-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "hr-compassionate-001",
+      "label": "Compassionate Leave",
+      "description": "Up to 5 paid days for immediate family bereavement (spouse, child, parent, sibling). Up to 3 paid days for non-immediate family.",
+      "node_type": "process",
+      "parent_id": "hr-req-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "hr-study-001",
+      "label": "Study / Exam Leave",
+      "description": "Up to 5 paid days per year for approved professional exams. Must be a company-approved or job-relevant qualification. 4 weeks notice required.",
+      "node_type": "process",
+      "parent_id": "hr-req-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "hr-mgr-001",
+      "label": "Manager Approval",
+      "description": "Direct line manager reviews the request and must approve or deny within 2 business days. Declined requests include a written reason.",
+      "node_type": "process",
+      "parent_id": null,
+      "permission_level": "public"
+    },
+    {
+      "id": "hr-review-001",
+      "label": "HR Compliance Review",
+      "description": "For leave requests exceeding 5 working days, the HR team reviews for entitlement balance and policy compliance before approval.",
+      "node_type": "process",
+      "parent_id": "hr-mgr-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "hr-confirm-001",
+      "label": "Confirmation & Recording",
+      "description": "Employee receives an automated confirmation email. Leave is recorded in the HR system and payroll is updated automatically.",
+      "node_type": "process",
+      "parent_id": "hr-review-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "hr-balance-001",
+      "label": "Leave Balance Tracking",
+      "description": "Internal HR system tracks entitlements, days taken, carry-overs, and pending requests. Detailed SLAs for approval turnaround are monitored by HR.",
+      "node_type": "process",
+      "parent_id": null,
+      "permission_level": "admin"
+    }
+  ],
+  "edges": [
+    {"id": "ehr-1", "source_id": "hr-req-001", "target_id": "hr-annual-001", "label": "annual", "edge_type": "flow"},
+    {"id": "ehr-2", "source_id": "hr-req-001", "target_id": "hr-sick-001", "label": "sick", "edge_type": "flow"},
+    {"id": "ehr-3", "source_id": "hr-req-001", "target_id": "hr-parental-001", "label": "parental", "edge_type": "flow"},
+    {"id": "ehr-4", "source_id": "hr-req-001", "target_id": "hr-compassionate-001", "label": "compassionate", "edge_type": "flow"},
+    {"id": "ehr-5", "source_id": "hr-req-001", "target_id": "hr-study-001", "label": "study", "edge_type": "flow"},
+    {"id": "ehr-6", "source_id": "hr-annual-001", "target_id": "hr-mgr-001", "label": "", "edge_type": "flow"},
+    {"id": "ehr-7", "source_id": "hr-sick-001", "target_id": "hr-mgr-001", "label": "", "edge_type": "flow"},
+    {"id": "ehr-8", "source_id": "hr-parental-001", "target_id": "hr-mgr-001", "label": "", "edge_type": "flow"},
+    {"id": "ehr-9", "source_id": "hr-compassionate-001", "target_id": "hr-mgr-001", "label": "", "edge_type": "flow"},
+    {"id": "ehr-10", "source_id": "hr-study-001", "target_id": "hr-mgr-001", "label": "", "edge_type": "flow"},
+    {"id": "ehr-11", "source_id": "hr-mgr-001", "target_id": "hr-review-001", "label": "approved", "edge_type": "flow"},
+    {"id": "ehr-12", "source_id": "hr-review-001", "target_id": "hr-confirm-001", "label": "", "edge_type": "flow"},
+    {"id": "ehr-13", "source_id": "hr-review-001", "target_id": "hr-balance-001", "label": "tracked", "edge_type": "flow"}
+  ]
+}

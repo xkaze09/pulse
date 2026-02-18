@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Network, GitBranch, Workflow, Eye } from "lucide-react";
+import { Network, GitBranch, Workflow, BookOpen, Eye } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import type { Role } from "@/types/org";
 
@@ -26,6 +26,13 @@ const CARDS = [
     description: "View engineering and operational workflow step diagrams.",
     Icon: Workflow,
     color: "bg-purple-50 text-purple-600 border-purple-100",
+  },
+  {
+    href: "/hr",
+    title: "HR Policy",
+    description: "Explore leave types, entitlements, and the leave approval process.",
+    Icon: BookOpen,
+    color: "bg-amber-50 text-amber-600 border-amber-100",
   },
 ];
 

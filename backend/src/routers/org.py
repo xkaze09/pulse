@@ -20,7 +20,7 @@ ROLE_LEVELS: dict[str, list[str]] = {
     "viewer":  ["public"],
 }
 
-VALID_TYPES = {"org_chart", "business_process", "workflow"}
+VALID_TYPES = {"org_chart", "business_process", "workflow", "hr_policy"}
 
 
 # ---------------------------------------------------------------------------
