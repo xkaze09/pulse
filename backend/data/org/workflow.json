@@ -1,0 +1,78 @@
+{
+  "diagram_type": "workflow",
+  "nodes": [
+    {
+      "id": "wf-pr-001",
+      "label": "Open Pull Request",
+      "description": "Developer opens a PR from a feature branch to main. Title and description required.",
+      "node_type": "workflow_step",
+      "parent_id": null,
+      "permission_level": "public"
+    },
+    {
+      "id": "wf-ci-001",
+      "label": "CI Pipeline",
+      "description": "GitHub Actions runs tests, linting, and security scans automatically on every commit.",
+      "node_type": "workflow_step",
+      "parent_id": "wf-pr-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "wf-review-001",
+      "label": "Code Review",
+      "description": "At least 2 engineers must approve. Reviewers check logic, security, and code quality.",
+      "node_type": "workflow_step",
+      "parent_id": "wf-ci-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "wf-merge-001",
+      "label": "Merge to Main",
+      "description": "Squash-merge after all checks pass. Branch deleted after merge.",
+      "node_type": "workflow_step",
+      "parent_id": "wf-review-001",
+      "permission_level": "public"
+    },
+    {
+      "id": "wf-staging-001",
+      "label": "Staging Deploy",
+      "description": "CD pipeline automatically deploys to staging environment. Smoke tests run.",
+      "node_type": "workflow_step",
+      "parent_id": "wf-merge-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "wf-approval-001",
+      "label": "Release Approval",
+      "description": "Engineering manager or release owner approves promotion to production.",
+      "node_type": "workflow_step",
+      "parent_id": "wf-staging-001",
+      "permission_level": "manager"
+    },
+    {
+      "id": "wf-prod-001",
+      "label": "Production Deploy",
+      "description": "Blue-green canary release: 10% → 50% → 100% traffic shift over 30 minutes.",
+      "node_type": "workflow_step",
+      "parent_id": "wf-approval-001",
+      "permission_level": "admin"
+    },
+    {
+      "id": "wf-monitor-001",
+      "label": "Post-Deploy Monitoring",
+      "description": "Error rates, latency P95, and business metrics monitored for 1 hour. Auto-rollback if thresholds breached.",
+      "node_type": "workflow_step",
+      "parent_id": "wf-prod-001",
+      "permission_level": "admin"
+    }
+  ],
+  "edges": [
+    {"id": "ewf-1", "source_id": "wf-pr-001", "target_id": "wf-ci-001", "label": "", "edge_type": "sequence"},
+    {"id": "ewf-2", "source_id": "wf-ci-001", "target_id": "wf-review-001", "label": "pass", "edge_type": "sequence"},
+    {"id": "ewf-3", "source_id": "wf-review-001", "target_id": "wf-merge-001", "label": "approved", "edge_type": "sequence"},
+    {"id": "ewf-4", "source_id": "wf-merge-001", "target_id": "wf-staging-001", "label": "", "edge_type": "sequence"},
+    {"id": "ewf-5", "source_id": "wf-staging-001", "target_id": "wf-approval-001", "label": "smoke tests pass", "edge_type": "sequence"},
+    {"id": "ewf-6", "source_id": "wf-approval-001", "target_id": "wf-prod-001", "label": "approved", "edge_type": "sequence"},
+    {"id": "ewf-7", "source_id": "wf-prod-001", "target_id": "wf-monitor-001", "label": "", "edge_type": "sequence"}
+  ]
+}
