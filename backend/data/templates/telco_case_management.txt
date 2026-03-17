@@ -1,0 +1,38 @@
+Telco Store Case Management Process
+
+Actors:
+- Customer
+- Store Frontliner (Retail Associate)
+- Store Supervisor
+- Backend Support Team
+- Case Management Team
+
+Process Flow:
+
+1. Customer enters the store and reports an issue, complaint, or service request to the Store Frontliner.
+
+2. Store Frontliner greets the customer, listens to the issue, and records the details in the system.
+
+3. Store Frontliner assesses the issue: Can it be resolved on-the-spot?
+   - If YES (solvable at store level, e.g. SIM swap, basic account reset, plan change): Frontliner resolves the issue immediately.
+     - Customer confirms satisfaction. Process ends successfully.
+   - If NO (requires backend investigation, billing dispute, network issue): Continue to create a case.
+
+4. Store Frontliner creates a case ticket in the CRM system, recording all issue details, customer information, and priority level.
+
+5. Store Supervisor evaluates the case:
+   - Does it require escalation to the Backend Support Team?
+   - If YES: Case is escalated to the appropriate Backend Support Team (Billing, Technical, or Provisioning).
+   - If NO: Supervisor handles the case resolution directly.
+
+6. Backend Support Team receives the escalated case, performs root-cause analysis, and works on a resolution (network diagnostics, billing correction, account provisioning).
+
+7. Case Management Team monitors all open cases to ensure SLA compliance and timely updates. They flag cases approaching SLA breach.
+
+8. Backend Support Team proposes a resolution and sends an automated notification to the customer via SMS or email.
+
+9. Customer reviews the proposed resolution:
+   - If the customer ACCEPTS: Customer confirms satisfaction. Store Frontliner closes the case in CRM and completes closure documentation. Process ends successfully.
+   - If the customer REJECTS: Case is reopened and re-escalated to the Backend Support Team for further investigation. Return to step 6.
+
+10. Store Frontliner documents the case closure with full resolution details in the CRM system.

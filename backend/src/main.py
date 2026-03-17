@@ -21,6 +21,7 @@ from src.agent import agent
 from src.auth import USERS, create_session
 from src.config import FRONTEND_URL
 from src.routers import admin as admin_router
+from src.routers import bpmn as bpmn_router
 from src.routers import org as org_router
 
 # ---------------------------------------------------------------------------
@@ -48,6 +49,7 @@ app.add_middleware(
 # Mount routers
 app.include_router(org_router.router, prefix="/api/org")
 app.include_router(admin_router.router, prefix="/api/admin")
+app.include_router(bpmn_router.router, prefix="/api/bpmn", tags=["bpmn"])
 
 
 # ---------------------------------------------------------------------------

@@ -108,3 +108,23 @@ export const adminApi = {
       { method: "POST" }
     ),
 };
+
+export interface BPMNTemplate {
+  name: string;
+  text: string;
+}
+
+export interface BPMNParseResult {
+  bpmn_xml: string;
+  process_json: object;
+}
+
+export const bpmnApi = {
+  parse: (text: string) =>
+    apiFetch<BPMNParseResult>("/api/bpmn/parse", {
+      method: "POST",
+      body: JSON.stringify({ text }),
+    }),
+
+  getTemplates: () => apiFetch<BPMNTemplate[]>("/api/bpmn/templates"),
+};
